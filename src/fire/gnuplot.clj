@@ -3,12 +3,11 @@
 (ns fire.gnuplot
   (:require [clojure.core.typed :refer [ann check-ns def-alias non-nil-return print-env cf
                                         typed-deps]]
+            [clojure.core.typed.contrib-annotations]
+            [fire.types]
             [clojure.java.io :as io])
   (:import (java.io BufferedWriter OutputStreamWriter Writer
                     BufferedReader InputStreamReader Reader)))
-
-(typed-deps clojure.core.typed.contrib-annotations)
-
 
 ;---------------------------------------
 ; Types
@@ -28,11 +27,6 @@
 (non-nil-return java.lang.Process/getInputStream :all)
 (non-nil-return java.lang.Runtime/exec :all)
 (non-nil-return java.lang.ProcessBuilder/start :all)
-
-;remove when core.typed upgraded
-(ann ^:nocheck clojure.java.io/writer
-     [clojure.java.io/IOFactory -> java.io.BufferedWriter])
-
 
 ;-------------------------------------------------
 ; gnuplot Process ops

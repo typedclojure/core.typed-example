@@ -6,15 +6,13 @@
                                         letfn> override-method dotimes>]
              :as tc]
             [clojure.core.typed.hole :as h]
-            [fire.gnuplot :as plot :refer [GnuplotP]]
+            (fire
+              [gnuplot :as plot :refer [GnuplotP]]
+              [types])
             [clojure.string :as str]
             [clojure.tools.trace :as trace])
   (:import (clojure.lang IPersistentVector IPersistentSet Seqable LazySeq)
            (java.io Writer)))
-
-(typed-deps fire.gnuplot 
-            fire.types
-            clojure.core.typed.hole)
 
 ;-----------------------------------------------------------------
 ; Type Aliases
@@ -67,6 +65,10 @@
   "A point in 2d space."
   '[AnyInteger, AnyInteger])
 
+(def-alias Wind
+  "Unused"
+  Any)
+
 ;-----------------------------------------------------------------
 ; Utility functions
 ;-----------------------------------------------------------------
@@ -109,7 +111,7 @@
 ; Grid operations
 ;-----------------------------------------------------------------
 
-(ann grid-from-fn [[Point -> State] & {:rows Long, :cols Long} :mandatory {:q Number :p Number :f Number} -> Grid])
+(ann grid-from-fn [[Point -> State] & {:rows Long, :cols Long :wind Wind} :mandatory {:q Number :p Number :f Number} -> Grid])
 (defn grid-from-fn 
   "Generate a grid with dimensions rows by cols. state-fn
   is fed each Point in the grid, and should return the initial state

@@ -18,9 +18,6 @@
   (:import (clojure.lang IPersistentSet IPersistentVector Seqable)
            (java.io File)))
 
-(typed-deps fire.simulate 
-            fire.gnuplot)
-
 ;--------------------------------------------------
 ; Types
 ;--------------------------------------------------
@@ -437,7 +434,7 @@
              {:wind :none, :size 200, :q 0.5, :p (* p factor2), :f (* f factor2)}
              {:wind :none, :size 200, :q 0.5, :p (* p factor3), :f (* f factor3)})]
     (multi-plot-nburning-percolation gp gs prefix-str
-                                     :report-on #{:f :g :size})
+                                     :report-on #{:f :p :size})
     #_(plot/stop gp)
     nil))
 
@@ -463,7 +460,7 @@
             (atom (start! :grid (initial-grid :q q :p p :f f :rows 100 :cols 100)))))
   (spit-grid (:grid @proc) "outhere")
 
-  (dotimes [_ 10]
+  (dotimes [_ 100]
     (swap! proc next!))
 
   (output-latex-graph @proc "foobar")

@@ -1,25 +1,22 @@
 (ns fire.main
   (:require [clojure.tools.cli :refer [cli]]
             [clojure.core.typed :refer [ann check-ns print-env letfn> typed-deps
-                                        ann-protocol loop> def-alias dotimes> ann-form]]
+                                        ann-protocol loop> def-alias dotimes> ann-form
+                                        Atom1 fn>]]
             [clojure.core.typed.hole :refer [silent-hole]]
             [clojure.tools.analyzer.hygienic :as hy]
             [clojure.java.io :refer [reader]]
             [clojure.string :as str]
             [fire.gnuplot :as plot]
-            [fire.simulate
-             [percolation :as perc]])
+            (fire.simulate
+             [percolation :as perc]))
   (:import (clojure.lang Seqable))
   (:gen-class))
 
-(typed-deps fire.types
-            fire.gnuplot
-            fire.simulate
-            fire.simulate.percolation
-            clojure.core.typed.hole)
-
 (def-alias RunOptions
-  '{:size Number
+  "Command line options for the percolation simulation
+  (post parsing by tools.cli)."
+  '{:size Long
     :q Number
     :p Number
     :f Number
@@ -33,7 +30,8 @@
                                           :cols size)))
                (Atom1 perc/PercolationP))]
     (dotimes> [_ l]
-      (swap! proc perc/next!))))
+      (swap! proc (fn> [p :- perc/PercolationP]
+                    (perc/next! p))))))
 
 (ann -main [String * -> nil])
 (defn -main 
