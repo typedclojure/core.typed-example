@@ -7,7 +7,7 @@
   `(do (ann ~name ~'[-> Any])
        (deftest ~name ~@body)))
 
-(ann ^:nocheck clojure.test/test-var [clojure.lang.Var -> Any])
+(ann ^:no-check clojure.test/test-var [clojure.lang.Var -> Any])
 
 (deftest> check-this-file
   (is (check-ns 'fire.simulate-test)))

@@ -6,7 +6,7 @@
                                         for> fn> ann-form AnyInteger doseq> cf inst into-array>
                                         override-method Atom1 letfn> ann-form dotimes>
                                         nilable-param non-nil-return]
-             :as tc]
+             :as t]
             [clojure.math.numeric-tower :refer [floor abs]]
             [clojure.tools.analyzer.hygienic :refer [macroexpand]]
             [clojure.reflect :as reflect]
@@ -15,8 +15,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.trace :as trace])
-  (:import (clojure.lang IPersistentSet IPersistentVector Seqable)
-           (java.io File)))
+  (:import (java.io File)))
 
 ;--------------------------------------------------
 ; Types
@@ -38,8 +37,9 @@
   "The shape of the initial burning patch of the grid"
   (U ':square ':line ':rectangle))
 
-(ann initial-grid [& {:rows Long, :cols Long :q Number :f Number :p Number :wind sim/Wind
-                      :patch-shape PatchShape} -> sim/Grid])
+(ann initial-grid [& :optional {:rows Long, :cols Long :q Number :f Number :p Number :wind sim/Wind
+                                :patch-shape PatchShape} 
+                   -> sim/Grid])
 (defn initial-grid
   "Return the initial grid. States are :tree (green tree) with probability q, and :empty
   (empty point) with probability 1 - q.
@@ -77,7 +77,9 @@
 ; gnuplot ops
 ;--------------------------------------------------
 
-(ann start! [& {:q Number, :grid sim/Grid, :p Number, :f Number :no-update Any, :gnuplot plot/GnuplotP :wind sim/Wind} -> PercolationP])
+(ann start! [& :optional {:q Number, :grid sim/Grid, :p Number, :f Number 
+                          :no-update Any, :gnuplot plot/GnuplotP :wind sim/Wind} 
+             -> PercolationP])
 (defn start! 
   "Start a gnuplot process and initialize it to the starting
   state. 
@@ -102,7 +104,7 @@
     {:gnuplot proc,
      :grid grid0}))
 
-(ann next! [PercolationP & {:no-update Any} -> PercolationP])
+(ann next! [PercolationP & :optional {:no-update Any} -> PercolationP])
 (defn next!
   "Calculate the next state for the percolation plot, and update
   the gnuplot process. Returns a new map for percolation ops.
@@ -141,7 +143,7 @@
   (sim/plot-forest gnuplot grid)
   (flush-epslatex))
 
-(ann ^:nocheck clojure.core/replace 
+(ann ^:no-check clojure.core/replace 
      (All [y] [(clojure.lang.IPersistentMap Any y) (clojure.lang.Seqable y) 
                -> (clojure.lang.Seqable y)]))
 
@@ -203,13 +205,13 @@
   (assert (not (nil? a)) "Found nil")
   a)
 
-(ann ^:nocheck clojure.core/spit [clojure.java.io/IOFactory Any & {:append Any} -> Any])
+(ann ^:no-check clojure.core/spit [clojure.java.io/IOFactory Any & :optional {:append Any} -> Any])
 
 (nilable-param java.io.File/createTempFile {2 #{1}})
 (non-nil-return java.io.File/createTempFile :all)
 
-(ann multi-plot-nburning-percolation [plot/GnuplotP (Seqable PercolationP) String & 
-                                      {} :mandatory {:report-on (IPersistentSet (U ':p ':f ':q ':size))} -> nil])
+(ann multi-plot-nburning-percolation [plot/GnuplotP (t/Coll PercolationP) String
+                                      & :mandatory {:report-on (t/Set (U ':p ':f ':q ':size))} -> nil])
 (defn multi-plot-nburning-percolation 
   "Make a nice multiplot to study relationship of q and grid size
   to fire percolation. Output files are prefixed with (str prefix-str \"-\")
@@ -242,7 +244,7 @@
         histories (map (fn> [p :- PercolationP]
                          (-> p :grid :history))
                        ps)
-        _ (ann-form histories (Seqable sim/GridHistory))]
+        _ (ann-form histories (t/Coll sim/GridHistory))]
     (letfn> [dump-history-fn-to :- [[sim/GridHistoryEntry -> Number] File -> nil]
              (dump-history-fn-to 
                ;; dump the result of applying lfn to a grid's history to the give temp-file
@@ -251,7 +253,7 @@
                  (let [nburnings (map (fn> [e :- sim/GridHistory]
                                         (lfn (nth e n)))
                                        histories)]
-                   (ann-form nburnings (Seqable Number))
+                   (ann-form nburnings (t/Coll Number))
                    (spit temp-file (str (str/join " " (cons n nburnings)) "\n") :append true))))]
       ;--------------------------------------------
       ;1. dump data to a temp file for all plots
@@ -354,7 +356,7 @@
   - :f     probably of lightning"
   '{:size Long, :q Number :f Number :p Number :wind sim/Wind})
 
-(ann make-grids [plot/GnuplotP Long MultiPlotEntry MultiPlotEntry * -> (Seqable PercolationP)])
+(ann make-grids [plot/GnuplotP Long MultiPlotEntry MultiPlotEntry * -> (t/Coll PercolationP)])
 (defn make-grids [gnuplot iters & specs]
   (letfn> [start :- [MultiPlotEntry -> PercolationP]
            (start [{:keys [size q p f wind]}]

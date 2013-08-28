@@ -7,7 +7,7 @@
 
 (typed-deps fire.simulate)
 
-(ann ^:nocheck create-grid [[sim/Point -> sim/State] Long Long -> sim/Grid])
+(ann ^:no-check create-grid [[sim/Point -> sim/State] Long Long -> sim/Grid])
 (defn create-grid [state-fn ^long rows ^long cols]
   (loop [row 0
          grid-v (transient [])]
@@ -19,7 +19,7 @@
                                (persistent! col-v)))))
       (persistent! grid-v))))
 
-(ann ^:nocheck grid-from-fn [[sim/Point -> sim/State] & {:rows Long, :cols Long} -> sim/Grid])
+(ann ^:no-check grid-from-fn [[sim/Point -> sim/State] & {:rows Long, :cols Long} -> sim/Grid])
 (defn grid-from-fn 
   "Generate a grid with dimensions rows by cols. state-fn
   is fed each Point in the grid, and should return the initial state
@@ -29,7 +29,7 @@
    :rows rows
    :cols cols})
 
-(ann ^:nocheck next-grid [sim/Grid sim/GridOpt -> sim/Grid])
+(ann ^:no-check next-grid [sim/Grid sim/GridOpt -> sim/Grid])
 (defn next-grid 
   "Simultaneously update a Grid to the next time increment
   according to the 4 update rules. Observed periodic boundary conditions.

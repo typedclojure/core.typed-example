@@ -6,7 +6,7 @@
   :profiles {:dev {:repl-options {:port 64433}}}
   :repositories {"sonatype-oss-public" "https://oss.sonatype.org/content/groups/public/"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/core.typed "0.1.17"]
+                 [org.clojure/core.typed "0.1.24"]
                  [org.clojure/tools.cli "0.2.2"]
                  [org.clojure/tools.trace "0.7.5"]
                  [org.clojure/math.numeric-tower "0.0.2"]]

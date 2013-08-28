@@ -111,7 +111,7 @@
 ; Grid operations
 ;-----------------------------------------------------------------
 
-(ann grid-from-fn [[Point -> State] & {:rows Long, :cols Long :wind Wind} :mandatory {:q Number :p Number :f Number} -> Grid])
+(ann grid-from-fn [[Point -> State] & :optional {:rows Long, :cols Long :wind Wind} :mandatory {:q Number :p Number :f Number} -> Grid])
 (defn grid-from-fn 
   "Generate a grid with dimensions rows by cols. state-fn
   is fed each Point in the grid, and should return the initial state
@@ -133,7 +133,7 @@
    :p p
    :f f})
 
-(ann initial-grid [& {:rows Long, :cols Long} :mandatory {:q Number :p Number :f Number} -> Grid])
+(ann initial-grid [& :optional {:rows Long, :cols Long} :mandatory {:q Number :p Number :f Number} -> Grid])
 (defn initial-grid
   "Return the initial grid state, a vector of vectors, with each
   position initialised to :empty. If not provided, number of rows and column default
@@ -391,7 +391,7 @@
   (flush))
 
 (comment
-  (ann run-simulation! [& {:p Number :f Number} -> nil])
+  (ann run-simulation! [& :optional {:p Number :f Number} -> nil])
   (defn run-simulation!
     "Run a forest fire simulation via gnuplot."
     [& {:as opts}]
