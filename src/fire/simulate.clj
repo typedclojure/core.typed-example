@@ -4,14 +4,13 @@
   (:require [clojure.core.typed :refer [ann check-ns typed-deps def-alias ann-datatype
                                         for> fn> ann-form AnyInteger doseq> cf inst
                                         letfn> override-method dotimes>]
-             :as tc]
+             :as t]
             [clojure.core.typed.hole :as h]
-            (fire
-              [gnuplot :as plot :refer [GnuplotP]]
-              [types])
+            [fire.gnuplot :as plot :refer [GnuplotP]]
+            [fire.types]
             [clojure.string :as str]
             [clojure.tools.trace :as trace])
-  (:import (clojure.lang IPersistentVector IPersistentSet Seqable LazySeq)
+  (:import (clojure.lang LazySeq)
            (java.io Writer)))
 
 ;-----------------------------------------------------------------
@@ -33,12 +32,12 @@
 
 (def-alias GridHistory
   "A vector of history states on a grid"
-  (IPersistentVector GridHistoryEntry))
+  (t/Vec GridHistoryEntry))
 
 (def-alias GridVector
   "A vector of vectors of states representing a cellular
   automata lattice."
-  (IPersistentVector (IPersistentVector State)))
+  (t/Vec (t/Vec State)))
 
 (def-alias Grid
   "An immutable snapshot of the world state.
@@ -111,7 +110,10 @@
 ; Grid operations
 ;-----------------------------------------------------------------
 
-(ann grid-from-fn [[Point -> State] & :optional {:rows Long, :cols Long :wind Wind} :mandatory {:q Number :p Number :f Number} -> Grid])
+(ann grid-from-fn [[Point -> State] 
+                   & :optional {:rows Long, :cols Long :wind Wind} 
+                     :mandatory {:q Number :p Number :f Number} 
+                   -> Grid])
 (defn grid-from-fn 
   "Generate a grid with dimensions rows by cols. state-fn
   is fed each Point in the grid, and should return the initial state
@@ -119,12 +121,12 @@
   [state-fn & {:keys [rows cols q p f] :or {rows 100 cols 100}}]
   {:pre [q p f]}
   {:grid (vec
-           (for> :- (IPersistentVector State)
-                 [row :- AnyInteger, (range rows)]
-                 (vec
-                   (for> :- State
-                         [col :- AnyInteger, (range cols)]
-                         (state-fn [row col])))))
+           (for> :- (t/Vec State)
+             [row :- AnyInteger, (range rows)]
+             (vec
+               (for> :- State
+                 [col :- AnyInteger, (range cols)]
+                 (state-fn [row col])))))
    :rows rows
    :cols cols
    :history []
@@ -133,7 +135,9 @@
    :p p
    :f f})
 
-(ann initial-grid [& :optional {:rows Long, :cols Long} :mandatory {:q Number :p Number :f Number} -> Grid])
+(ann initial-grid [& :optional {:rows Long, :cols Long} 
+                     :mandatory {:q Number :p Number :f Number} 
+                   -> Grid])
 (defn initial-grid
   "Return the initial grid state, a vector of vectors, with each
   position initialised to :empty. If not provided, number of rows and column default
@@ -153,7 +157,7 @@
       (nth row)
       (nth col)))
 
-(ann neighbour-positions (IPersistentSet '[Long Long]))
+(ann neighbour-positions (t/Set '[Long Long]))
 (def neighbour-positions
   "The set of relative (row, col) coordinates to calculate
   the nearest neighbours for a point."
@@ -234,7 +238,7 @@
                :tree
                :empty))))
 
-(ann flat-grid [Grid -> (Seqable State)])
+(ann flat-grid [Grid -> (t/Coll State)])
 (defn flat-grid [{:keys [grid]}]
   (ann-form grid GridVector)
   (apply concat grid))
@@ -249,7 +253,7 @@
         ; START TYPE SYSTEM BOILERPLATE
         ;  we need to instantiate `vector` because core.typed's inference isn't good enough.
         ;  Semantically both row-states and col-states are exactly clojure.core/vector.
-        row-states (inst vector AnyInteger (IPersistentVector State) Any Any Any Any)
+        row-states (inst vector AnyInteger (t/Vec State) Any Any Any Any)
         col-states (inst vector AnyInteger State Any Any Any Any)
         ; END BOILERPLATE
         ;----------------------------------------------------------------------------------
@@ -262,8 +266,8 @@
                                     :nempty   (count (filter #(= :empty %) (flat-grid grid)))}))
       (assoc :grid
              (vec
-               (for> :- (IPersistentVector State)
-                 [[row ss] :- '[AnyInteger (IPersistentVector State)], (map-indexed row-states (:grid grid))]
+               (for> :- (t/Vec State)
+                 [[row ss] :- '[AnyInteger (t/Vec State)], (map-indexed row-states (:grid grid))]
                  ; row is the row number
                  ; ss is a whole column of states
                  (vec
@@ -296,7 +300,7 @@
                        ; array length is rowsxcols
                        (* nrows ncols)
                        (map (fn> [s :- State]
-                                 (-> s state->number char))
+                              (-> s state->number char))
                             ; reverse the grid, we provide each row in reverse order.
                             (apply concat (rseq (:grid grid)))))]
       (.write *out* arr))
